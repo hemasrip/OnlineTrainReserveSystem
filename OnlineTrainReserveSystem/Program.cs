@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using OnlineTrainReserveSystem.Configuration;
 using OnlineTrainReserveSystem.Models;
 using OnlineTrainReserveSystem.Services;
 
@@ -12,6 +13,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<TrainReservationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<PaymentService>();
 var app = builder.Build();
 

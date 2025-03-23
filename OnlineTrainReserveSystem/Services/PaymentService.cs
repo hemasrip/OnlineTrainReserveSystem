@@ -7,10 +7,11 @@ namespace OnlineTrainReserveSystem.Services
     public class PaymentService
     {
         private readonly TrainReservationDbContext _context;
-
-        public PaymentService(TrainReservationDbContext context)
+        private readonly EmailService _emailService;
+        public PaymentService(TrainReservationDbContext context, EmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         // Existing CalculateFare method (already added)
@@ -131,7 +132,15 @@ namespace OnlineTrainReserveSystem.Services
                 _context.SaveChanges();
                 transaction.Commit();
 
-                // Step 9: Return response
+                // Step 9: Send booking confirmation email
+                var user = _context.Users.FirstOrDefault(u => u.UserId == request.UserId);
+                if (user != null)
+                {
+                    var emailBody = $"Your booking is confirmed!\nPNR: {pnrNo}\nTrain: {request.TrainId}\nJourney Date: {request.JourneyDate.ToString("yyyy-MM-dd")}\nClass: {request.ClassType}\nTotal Seats: {request.TotalSeats}\nTotal Fare: {totalFare}";
+                    _emailService.SendEmailAsync(user.Email, user.Username, "Booking Confirmation", emailBody).GetAwaiter().GetResult();
+                }
+
+                // Step 10: Return response
                 return new PaymentResponse
                 {
                     PNRNo = pnrNo,
@@ -247,7 +256,15 @@ namespace OnlineTrainReserveSystem.Services
                 _context.SaveChanges();
                 transaction.Commit();
 
-                // Step 10: Return response
+                // Step 10: Send cancellation and refund email
+                var user = _context.Users.FirstOrDefault(u => u.UserId == reservation.UserId);
+                if (user != null)
+                {
+                    var emailBody = $"Your booking has been cancelled.\nPNR: {pnrNo}\nRefund Amount: {refundAmount}\nRefund Status: Processed";
+                    _emailService.SendEmailAsync(user.Email, user.Username, "Cancellation and Refund Confirmation", emailBody).GetAwaiter().GetResult();
+                }
+
+                // Step 11: Return response
                 return new RefundResponse
                 {
                     PNRNo = pnrNo,
