@@ -107,6 +107,18 @@ namespace OnlineTrainReserveSystem.Controllers
             }
         }
 
-
+        [HttpGet("booking/{PNRNo}")]
+        public IActionResult GetBookingDetails(long PNRNo)
+        {
+            try
+            {
+                var response = _paymentService.GetBookingDetails(PNRNo);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Failed to retrieve booking details: {ex.Message}");
+            }
+        }
     }
 }
