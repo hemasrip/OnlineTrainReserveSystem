@@ -289,5 +289,37 @@ namespace OnlineTrainReserveSystem.Services
         }
 
 
+        public BookingDetailsResponse GetBookingDetails(long pnrNo)
+        {
+            var reservation = _context.Reservations
+                .Include(r => r.User)
+                .Include(r => r.Train)
+                .FirstOrDefault(r => r.Pnrno == pnrNo);
+
+            if (reservation == null)
+            {
+                throw new Exception("Reservation not found.");
+            }
+
+            return new BookingDetailsResponse
+            {
+                PNRNo = reservation.Pnrno,
+                UserId = reservation.UserId,
+                Username = reservation.User.Username,
+                TrainId = reservation.TrainId,
+                TrainName = reservation.Train.TrainName,
+                Source = reservation.Train.Source,
+                Destination = reservation.Train.Destination,
+                JourneyDate = reservation.JourneyDate,
+                ClassType = reservation.ClassType,
+                TotalSeats = reservation.TotalSeats,
+                TotalFare = reservation.TotalFare,
+                PaymentStatus = reservation.PaymentStatus,
+                CancellationStatus = reservation.CancellationStatus,
+                CancellationTimestamp = reservation.CancellationTimestamp
+            };
+        }
+
+
     }
 }
