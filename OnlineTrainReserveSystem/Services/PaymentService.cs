@@ -218,8 +218,18 @@ namespace OnlineTrainReserveSystem.Services
                         throw new Exception("Invalid class type in reservation.");
                 }
 
-                // Step 7: Calculate refund amount (e.g., 80% of the total fare)
-                decimal refundAmount = reservation.TotalFare * 0.8m;
+                var timeUntilJourney = reservation.JourneyDate.ToDateTime(TimeOnly.MinValue) - DateTime.Now;
+                decimal refundPercentage = timeUntilJourney.TotalHours switch
+                {
+                    > 48 => 0.9m,
+                    > 24 => 0.5m,
+                    _ => 0m
+                };
+                decimal refundAmount = reservation.TotalFare * refundPercentage;
+                if (refundAmount == 0)
+                {
+                    throw new Exception("Cancellation not allowed within 24 hours of the journey.");
+                }
 
                 // Step 8: Create a refund record
                 var refund = new Refund
